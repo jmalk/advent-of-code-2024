@@ -80,7 +80,10 @@ interface Position {
   facing: Direction;
 }
 
-function step({ x, y, facing }: Position, map: string[][]): Position {
+function step(
+  { x, y, facing, stepsTaken }: Position,
+  map: string[][],
+): Position {
   const lookingNorthAtBlock = facing === "NORTH" && map[y - 1][x] === "#";
   const lookingEastAtBlock = facing === "EAST" && map[y][x + 1] === "#";
   const lookingSouthAtBlock = facing === "SOUTH" && map[y + 1][x] === "#";
@@ -115,7 +118,7 @@ function step({ x, y, facing }: Position, map: string[][]): Position {
     return { y: y, x: x - 1, facing: newFacing, stepsTaken: 1 };
   }
 
-  return { y: y - 1, x: x, facing: newFacing, stepsTaken: 1 };
+  return { y: y - 1, x: x, facing: newFacing, stepsTaken: stepsTaken + 1 };
 }
 
 test("Taking a step while facing NORTH decreases y by 1", () => {
@@ -153,8 +156,13 @@ test("Taking a step while facing NORTH increases steps taken by 1", () => {
   const position = { x, y, facing: "NORTH" as const, stepsTaken: 0 };
 
   const position1 = step(position, map);
-  expect(position1.y).toBe(3);
   expect(position1.stepsTaken).toBe(1);
+
+  const position2 = step(position1, map);
+  expect(position2.stepsTaken).toBe(2);
+
+  const position3 = step(position2, map);
+  expect(position3.stepsTaken).toBe(3);
 });
 
 test("Taking a step while facing SOUTH increases y by 1", () => {
