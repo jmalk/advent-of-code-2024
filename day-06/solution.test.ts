@@ -307,16 +307,12 @@ const guardGone = (
   position: { x: number; y: number; facing: string },
   map: string[][],
 ) => {
-  if (
+  return (
     position.y < 0 ||
     position.x < 0 ||
     position.x > map[0].length - 1 ||
     position.y > map.length - 1
-  ) {
-    return true;
-  }
-
-  return false;
+  );
 };
 
 describe("Guard gone?", function () {
