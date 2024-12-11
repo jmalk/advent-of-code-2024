@@ -402,7 +402,7 @@ function getCoordString(position: Position) {
   return `${position.x},${position.y}`;
 }
 
-function countUniqueSteps(position: Position, map: string[][]) {
+function countUniqueLocations(position: Position, map: string[][]) {
   const coordString = getCoordString(position);
   const uniqueSteps = new Set([coordString]);
 
@@ -422,7 +422,7 @@ function countUniqueSteps(position: Position, map: string[][]) {
 test("Part 1 example", function () {
   const { map, position } = parse(gridString);
 
-  const result = countUniqueSteps(position, map);
+  const result = countUniqueLocations(position, map);
 
   expect(result).toBe(41);
 });
@@ -431,7 +431,7 @@ test("Part 1", () => {
   const file = readFile("./day-06/input.txt");
   const { map, position } = parse(file);
 
-  const result = countUniqueSteps(position, map);
+  const result = countUniqueLocations(position, map);
 
   const expected = 5239;
   expect(result).toBe(expected);
