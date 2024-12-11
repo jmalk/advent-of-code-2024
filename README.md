@@ -1,6 +1,6 @@
 # README
 
-Solutions to [https://adventofcode.com/2023](https://adventofcode.com/2023).
+Solutions to <https://adventofcode.com/2024>.
 
 To see the answers, run the tests:
 
