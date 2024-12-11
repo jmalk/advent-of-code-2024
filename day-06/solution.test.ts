@@ -2,8 +2,17 @@ import { describe, expect, test } from "vitest";
 
 // import { getLines, logSolution, readFile } from "../lib";
 
-function parse(gridString: string) {
-  return gridString.split("\n").map((s) => s.split(""));
+function parse(gridString: string): { map: string[][]; position: Position } {
+  const rawGrid = gridString.split("\n").map((s) => s.split(""));
+  const y = rawGrid.findIndex((row) => row.includes("^"));
+  const x = rawGrid[y].indexOf("^");
+
+  // Find the person and replace them with empty space
+  const map = rawGrid.map((row) =>
+    row.map((square) => (square === "^" ? "." : square)),
+  );
+
+  return { map, position: { x, y, facing: "NORTH", stepsTaken: 0 } };
 }
 
 const gridString = `....#.....
@@ -18,44 +27,12 @@ const gridString = `....#.....
 ......#...`;
 
 test("A grid", () => {
-  const grid = parse(gridString);
+  const { map, position } = parse(gridString);
 
-  expect(grid).toStrictEqual([
-    [".", ".", ".", ".", "#", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "#"],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", "#", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", "#", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", "#", ".", ".", "^", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", "#", "."],
-    ["#", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", "#", ".", ".", "."],
-  ]);
-});
-
-test("Initial position and heading", () => {
-  const grid = parse(gridString);
-
-  const y = grid.findIndex((row) => row.includes("^"));
-
-  expect(y).toBe(6);
-
-  const x = grid[y].indexOf("^");
-
-  expect(x).toBe(4);
-
-  const position = { x, y, facing: "NORTH" };
-  expect(position).toStrictEqual({ x, y, facing: "NORTH" });
-});
-
-test("Initial map does not include person", () => {
-  const grid = parse(gridString);
-
-  // Find the person and replace them with empty space
-  const map = grid.map((row) =>
-    row.map((square) => (square === "^" ? "." : square)),
-  );
+  expect(position.x).toBe(4);
+  expect(position.y).toBe(6);
+  expect(position.facing).toBe("NORTH");
+  expect(position.stepsTaken).toBe(0);
 
   expect(map).toStrictEqual([
     [".", ".", ".", ".", "#", ".", ".", ".", ".", "."],
@@ -84,9 +61,9 @@ function step(
   { x, y, facing, stepsTaken }: Position,
   map: string[][],
 ): Position {
-  const lookingNorthAtBlock = facing === "NORTH" && map[y - 1][x] === "#";
+  const lookingNorthAtBlock = facing === "NORTH" && map[y - 1]?.[x] === "#";
   const lookingEastAtBlock = facing === "EAST" && map[y][x + 1] === "#";
-  const lookingSouthAtBlock = facing === "SOUTH" && map[y + 1][x] === "#";
+  const lookingSouthAtBlock = facing === "SOUTH" && map[y + 1]?.[x] === "#";
   const lookingWestAtBlock = facing === "WEST" && map[y][x - 1] === "#";
   const lookingAtBlock =
     lookingNorthAtBlock ||
@@ -107,15 +84,15 @@ function step(
   const newFacing = lookingAtBlock ? turnRight(facing) : facing;
 
   if (newFacing === "EAST") {
-    return { y: y, x: x + 1, facing: newFacing, stepsTaken: 1 };
+    return { y: y, x: x + 1, facing: newFacing, stepsTaken: stepsTaken + 1 };
   }
 
   if (newFacing === "SOUTH") {
-    return { y: y + 1, x: x, facing: newFacing, stepsTaken: 1 };
+    return { y: y + 1, x: x, facing: newFacing, stepsTaken: stepsTaken + 1 };
   }
 
   if (newFacing === "WEST") {
-    return { y: y, x: x - 1, facing: newFacing, stepsTaken: 1 };
+    return { y: y, x: x - 1, facing: newFacing, stepsTaken: stepsTaken + 1 };
   }
 
   return { y: y - 1, x: x, facing: newFacing, stepsTaken: stepsTaken + 1 };
@@ -187,6 +164,28 @@ test("Taking a step while facing SOUTH increases y by 1", () => {
   expect(position3.y).toBe(4);
 });
 
+test("Taking a step while facing SOUTH increases steps taken by 1", () => {
+  const map = [
+    [".", ".", "."],
+    [".", ".", "."],
+    [".", ".", "."],
+    [".", ".", "."],
+    [".", ".", "."],
+  ];
+  const y = 1;
+  const x = 1;
+  const position = { x, y, facing: "SOUTH" as const, stepsTaken: 0 };
+
+  const position1 = step(position, map);
+  expect(position1.stepsTaken).toBe(1);
+
+  const position2 = step(position1, map);
+  expect(position2.stepsTaken).toBe(2);
+
+  const position3 = step(position2, map);
+  expect(position3.stepsTaken).toBe(3);
+});
+
 test("Taking a step while facing EAST increases x by 1", () => {
   const map = [
     [".", ".", ".", ".", "."],
@@ -207,6 +206,26 @@ test("Taking a step while facing EAST increases x by 1", () => {
   expect(position3.x).toBe(4);
 });
 
+test("Taking a step while facing EAST increases steps taken by 1", () => {
+  const map = [
+    [".", ".", ".", ".", "."],
+    [".", ".", ".", ".", "."],
+    [".", ".", ".", ".", "."],
+  ];
+  const y = 1;
+  const x = 1;
+  const position = { x, y, facing: "EAST" as const, stepsTaken: 0 };
+
+  const position1 = step(position, map);
+  expect(position1.stepsTaken).toBe(1);
+
+  const position2 = step(position1, map);
+  expect(position2.stepsTaken).toBe(2);
+
+  const position3 = step(position2, map);
+  expect(position3.stepsTaken).toBe(3);
+});
+
 test("Taking a step while facing WEST decreases x by 1", () => {
   const map = [
     [".", ".", ".", ".", "."],
@@ -225,6 +244,26 @@ test("Taking a step while facing WEST decreases x by 1", () => {
 
   const position3 = step(position2, map);
   expect(position3.x).toBe(1);
+});
+
+test("Taking a step while facing WEST increases steps taken by 1", () => {
+  const map = [
+    [".", ".", ".", ".", "."],
+    [".", ".", ".", ".", "."],
+    [".", ".", ".", ".", "."],
+  ];
+  const y = 1;
+  const x = 4;
+  const position = { x, y, facing: "WEST" as const, stepsTaken: 0 };
+
+  const position1 = step(position, map);
+  expect(position1.stepsTaken).toBe(1);
+
+  const position2 = step(position1, map);
+  expect(position2.stepsTaken).toBe(2);
+
+  const position3 = step(position2, map);
+  expect(position3.stepsTaken).toBe(3);
 });
 
 test("Trying to step NORTH into a blocked square changes facing to EAST", () => {
@@ -311,10 +350,7 @@ test("Trying to step WEST into a blocked square changes facing to NORTH", () => 
   });
 });
 
-const guardGone = (
-  position: { x: number; y: number; facing: string },
-  map: string[][],
-) => {
+const guardGone = (position: Position, map: string[][]) => {
   return (
     position.y < 0 ||
     position.x < 0 ||
@@ -331,34 +367,49 @@ describe("Guard gone?", function () {
   ];
 
   test("Guard has not gone if they are within the map", () => {
-    const position = { x: 1, y: 1, facing: "NORTH" as const };
+    const position = { x: 1, y: 1, facing: "NORTH" as const, stepsTaken: 0 };
 
     expect(guardGone(position, map)).toBe(false);
   });
 
   test("Guard has gone if they are NORTH of the map", () => {
-    const position = { x: 1, y: -1, facing: "NORTH" as const };
+    const position = { x: 1, y: -1, facing: "NORTH" as const, stepsTaken: 0 };
 
     expect(guardGone(position, map)).toBe(true);
   });
 
   test("Guard has gone if they are WEST of the map", () => {
-    const position = { x: -1, y: 1, facing: "WEST" as const };
+    const position = { x: -1, y: 1, facing: "WEST" as const, stepsTaken: 0 };
 
     expect(guardGone(position, map)).toBe(true);
   });
 
   test("Guard has gone if they are EAST of the map", () => {
-    const position = { x: 3, y: 1, facing: "EAST" as const };
+    const position = { x: 3, y: 1, facing: "EAST" as const, stepsTaken: 0 };
 
     expect(guardGone(position, map)).toBe(true);
   });
 
   test("Guard has gone if they are SOUTH of the map", () => {
-    const position = { x: 1, y: 3, facing: "SOUTH" as const };
+    const position = { x: 1, y: 3, facing: "SOUTH" as const, stepsTaken: 0 };
 
     expect(guardGone(position, map)).toBe(true);
   });
+});
+
+test("Part 1 example", function () {
+  const parseResult = parse(gridString);
+  let position = parseResult.position;
+  const map = parseResult.map;
+
+  let gone = guardGone(position, map);
+  while (!gone) {
+    position = step(position, map);
+    gone = guardGone(position, map);
+  }
+
+  // TODO: Keep track of unique positions visited, not just number of steps taken.
+  expect(position.stepsTaken).toBe(41);
 });
 
 test.skip("Part 1", () => {
