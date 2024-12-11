@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest";
+import { logSolution, readFile } from "../lib";
 
 // import { getLines, logSolution, readFile } from "../lib";
 
@@ -397,31 +398,44 @@ describe("Guard gone?", function () {
   });
 });
 
-test("Part 1 example", function () {
-  const parseResult = parse(gridString);
-  let position = parseResult.position;
-  const map = parseResult.map;
+function getCoordString(position: Position) {
+  return `${position.x},${position.y}`;
+}
+
+function countUniqueSteps(position: Position, map: string[][]) {
+  const coordString = getCoordString(position);
+  const uniqueSteps = new Set([coordString]);
 
   let gone = guardGone(position, map);
   while (!gone) {
     position = step(position, map);
     gone = guardGone(position, map);
+    // A bit clunky, but it fixes the off by one error:
+    if (!gone) {
+      uniqueSteps.add(getCoordString(position));
+    }
   }
 
-  // TODO: Keep track of unique positions visited, not just number of steps taken.
-  expect(position.stepsTaken).toBe(41);
+  return uniqueSteps.size;
+}
+
+test("Part 1 example", function () {
+  const { map, position } = parse(gridString);
+
+  const result = countUniqueSteps(position, map);
+
+  expect(result).toBe(41);
 });
 
-test.skip("Part 1", () => {
-  // TODO: template for day-xx
-  // const file = readFile("./day-xx/input.txt");
-  // const lines = getLines(file);
-  // const result = ;
-  // const expected = ;
-  // expect(result).toBe(expected);
-  // TODO: template for day-xx
-  // logSolution("xx", "1", expected);
-  expect(true).toBe(false);
+test("Part 1", () => {
+  const file = readFile("./day-06/input.txt");
+  const { map, position } = parse(file);
+
+  const result = countUniqueSteps(position, map);
+
+  const expected = 5239;
+  expect(result).toBe(expected);
+  logSolution("06", "1", expected);
 });
 
 test.skip("Part 2", () => {
