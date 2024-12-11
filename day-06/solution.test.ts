@@ -13,7 +13,7 @@ function parse(gridString: string): { map: string[][]; position: Position } {
     row.map((square) => (square === "^" ? "." : square)),
   );
 
-  return { map, position: { x, y, facing: "NORTH", stepsTaken: 0 } };
+  return { map, position: { x, y, facing: "NORTH" } };
 }
 
 const gridString = `....#.....
@@ -33,7 +33,6 @@ test("A grid", () => {
   expect(position.x).toBe(4);
   expect(position.y).toBe(6);
   expect(position.facing).toBe("NORTH");
-  expect(position.stepsTaken).toBe(0);
 
   expect(map).toStrictEqual([
     [".", ".", ".", ".", "#", ".", ".", ".", ".", "."],
@@ -52,16 +51,12 @@ test("A grid", () => {
 type Direction = "NORTH" | "EAST" | "SOUTH" | "WEST";
 
 interface Position {
-  stepsTaken: number;
   x: number;
   y: number;
   facing: Direction;
 }
 
-function step(
-  { x, y, facing, stepsTaken }: Position,
-  map: string[][],
-): Position {
+function step({ x, y, facing }: Position, map: string[][]): Position {
   const lookingNorthAtBlock = facing === "NORTH" && map[y - 1]?.[x] === "#";
   const lookingEastAtBlock = facing === "EAST" && map[y][x + 1] === "#";
   const lookingSouthAtBlock = facing === "SOUTH" && map[y + 1]?.[x] === "#";
@@ -85,18 +80,18 @@ function step(
   const newFacing = lookingAtBlock ? turnRight(facing) : facing;
 
   if (newFacing === "EAST") {
-    return { y: y, x: x + 1, facing: newFacing, stepsTaken: stepsTaken + 1 };
+    return { y: y, x: x + 1, facing: newFacing };
   }
 
   if (newFacing === "SOUTH") {
-    return { y: y + 1, x: x, facing: newFacing, stepsTaken: stepsTaken + 1 };
+    return { y: y + 1, x: x, facing: newFacing };
   }
 
   if (newFacing === "WEST") {
-    return { y: y, x: x - 1, facing: newFacing, stepsTaken: stepsTaken + 1 };
+    return { y: y, x: x - 1, facing: newFacing };
   }
 
-  return { y: y - 1, x: x, facing: newFacing, stepsTaken: stepsTaken + 1 };
+  return { y: y - 1, x: x, facing: newFacing };
 }
 
 test("Taking a step while facing NORTH decreases y by 1", () => {
@@ -121,28 +116,6 @@ test("Taking a step while facing NORTH decreases y by 1", () => {
   expect(position3.y).toBe(1);
 });
 
-test("Taking a step while facing NORTH increases steps taken by 1", () => {
-  const map = [
-    [".", ".", "."],
-    [".", ".", "."],
-    [".", ".", "."],
-    [".", ".", "."],
-    [".", ".", "."],
-  ];
-  const y = 4;
-  const x = 1;
-  const position = { x, y, facing: "NORTH" as const, stepsTaken: 0 };
-
-  const position1 = step(position, map);
-  expect(position1.stepsTaken).toBe(1);
-
-  const position2 = step(position1, map);
-  expect(position2.stepsTaken).toBe(2);
-
-  const position3 = step(position2, map);
-  expect(position3.stepsTaken).toBe(3);
-});
-
 test("Taking a step while facing SOUTH increases y by 1", () => {
   const map = [
     [".", ".", "."],
@@ -165,28 +138,6 @@ test("Taking a step while facing SOUTH increases y by 1", () => {
   expect(position3.y).toBe(4);
 });
 
-test("Taking a step while facing SOUTH increases steps taken by 1", () => {
-  const map = [
-    [".", ".", "."],
-    [".", ".", "."],
-    [".", ".", "."],
-    [".", ".", "."],
-    [".", ".", "."],
-  ];
-  const y = 1;
-  const x = 1;
-  const position = { x, y, facing: "SOUTH" as const, stepsTaken: 0 };
-
-  const position1 = step(position, map);
-  expect(position1.stepsTaken).toBe(1);
-
-  const position2 = step(position1, map);
-  expect(position2.stepsTaken).toBe(2);
-
-  const position3 = step(position2, map);
-  expect(position3.stepsTaken).toBe(3);
-});
-
 test("Taking a step while facing EAST increases x by 1", () => {
   const map = [
     [".", ".", ".", ".", "."],
@@ -205,26 +156,6 @@ test("Taking a step while facing EAST increases x by 1", () => {
 
   const position3 = step(position2, map);
   expect(position3.x).toBe(4);
-});
-
-test("Taking a step while facing EAST increases steps taken by 1", () => {
-  const map = [
-    [".", ".", ".", ".", "."],
-    [".", ".", ".", ".", "."],
-    [".", ".", ".", ".", "."],
-  ];
-  const y = 1;
-  const x = 1;
-  const position = { x, y, facing: "EAST" as const, stepsTaken: 0 };
-
-  const position1 = step(position, map);
-  expect(position1.stepsTaken).toBe(1);
-
-  const position2 = step(position1, map);
-  expect(position2.stepsTaken).toBe(2);
-
-  const position3 = step(position2, map);
-  expect(position3.stepsTaken).toBe(3);
 });
 
 test("Taking a step while facing WEST decreases x by 1", () => {
@@ -247,30 +178,10 @@ test("Taking a step while facing WEST decreases x by 1", () => {
   expect(position3.x).toBe(1);
 });
 
-test("Taking a step while facing WEST increases steps taken by 1", () => {
-  const map = [
-    [".", ".", ".", ".", "."],
-    [".", ".", ".", ".", "."],
-    [".", ".", ".", ".", "."],
-  ];
-  const y = 1;
-  const x = 4;
-  const position = { x, y, facing: "WEST" as const, stepsTaken: 0 };
-
-  const position1 = step(position, map);
-  expect(position1.stepsTaken).toBe(1);
-
-  const position2 = step(position1, map);
-  expect(position2.stepsTaken).toBe(2);
-
-  const position3 = step(position2, map);
-  expect(position3.stepsTaken).toBe(3);
-});
-
 test("Trying to step NORTH into a blocked square changes facing to EAST", () => {
   const y = 1;
   const x = 1;
-  const position = { x, y, facing: "NORTH" as const, stepsTaken: 0 };
+  const position = { x, y, facing: "NORTH" as const };
 
   const map = [
     [".", "#", "."],
@@ -284,14 +195,13 @@ test("Trying to step NORTH into a blocked square changes facing to EAST", () => 
     x: 2,
     y: 1,
     facing: "EAST",
-    stepsTaken: 1,
   });
 });
 
 test("Trying to step EAST into a blocked square changes facing to SOUTH", () => {
   const y = 1;
   const x = 1;
-  const position = { x, y, facing: "EAST" as const, stepsTaken: 0 };
+  const position = { x, y, facing: "EAST" as const };
 
   const map = [
     [".", ".", "."],
@@ -305,14 +215,13 @@ test("Trying to step EAST into a blocked square changes facing to SOUTH", () => 
     x: 1,
     y: 2,
     facing: "SOUTH",
-    stepsTaken: 1,
   });
 });
 
 test("Trying to step SOUTH into a blocked square changes facing to WEST", () => {
   const y = 1;
   const x = 1;
-  const position = { x, y, facing: "SOUTH" as const, stepsTaken: 0 };
+  const position = { x, y, facing: "SOUTH" as const };
 
   const map = [
     [".", ".", "."],
@@ -326,14 +235,13 @@ test("Trying to step SOUTH into a blocked square changes facing to WEST", () => 
     x: 0,
     y: 1,
     facing: "WEST",
-    stepsTaken: 1,
   });
 });
 
 test("Trying to step WEST into a blocked square changes facing to NORTH", () => {
   const y = 1;
   const x = 1;
-  const position = { x, y, facing: "WEST" as const, stepsTaken: 0 };
+  const position = { x, y, facing: "WEST" as const };
 
   const map = [
     [".", ".", "."],
@@ -347,7 +255,6 @@ test("Trying to step WEST into a blocked square changes facing to NORTH", () => 
     x: 1,
     y: 0,
     facing: "NORTH",
-    stepsTaken: 1,
   });
 });
 
