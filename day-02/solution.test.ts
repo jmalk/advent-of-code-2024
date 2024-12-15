@@ -59,6 +59,7 @@ test("Part 1", () => {
 
 // Return copies of the report, each with a different level (element) removed.
 function mutations(report: number[]): number[][] {
+  // @ts-expect-error Intellij doesn't recognise toSpliced, but it's not worth faffing with
   return report.map((_, index) => report.toSpliced(index, 1));
 }
 
