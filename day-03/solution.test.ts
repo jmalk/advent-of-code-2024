@@ -41,7 +41,7 @@ test("Reading corrupted memory with conditionals: empty memory", () => {
   expect(readWithConditionals(memory)).toStrictEqual([]);
 });
 
-test.skip("Reading corrupted memory with conditionals", () => {
+test("Reading corrupted memory with conditionals", () => {
   const memory =
     "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
 
@@ -51,14 +51,10 @@ test.skip("Reading corrupted memory with conditionals", () => {
   ]);
 });
 
-test.skip("Part 2", () => {
-  // TODO: template for day-xx
-  // const file = readFile("./day-xx/input.txt");
-  // const lines = getLines(file);
-  // const result = ;
-  // const expected = ;
-  // expect(result).toBe(expected);
-  // TODO: template for day-xx
-  // logSolution("xx", "2", expected);
-  expect(true).toBe(false);
+test("Part 2", () => {
+  const file = readFile("./day-03/input.txt");
+  const result = multiply(readWithConditionals(file));
+  const expected = 103811193;
+  expect(result).toBe(expected);
+  logSolution("03", "2", expected);
 });
