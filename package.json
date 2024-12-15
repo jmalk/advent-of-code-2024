@@ -16,13 +16,12 @@
     "@tsconfig/node22": "^22.0.0",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
     "@typescript-eslint/parser": "^6.13.1",
-    "@vitest/ui": "^0.34.6",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.1.0",
     "prettier": "3.1.0",
-    "vitest": "^0.34.6"
+    "vitest": "^2.1.8"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
